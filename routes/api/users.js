@@ -8,8 +8,15 @@ const auth = require('../../middleware/auth');
 const User = require('../../models/User');
 const secret = process.env.jwtSecret;
 
+router.get('/', auth, async (req, res) => {
+  const users = await User.find().select('-password');
+  res.json(users);
+});
+
 router.get('/', async (req, res) => {
-  const users = await User.find().select('-password').select('-email');
+  const users = await User.find()
+    .select('-password')
+    .select('-email');
   res.json(users);
 });
 
