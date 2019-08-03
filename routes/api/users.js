@@ -2,10 +2,14 @@ require('dotenv').config();
 const router = require('express').Router();
 const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcryptjs');
 
 const User = require('../../models/User');
 const secret = process.env.jwtSecret;
+
+router.get('/', (req, res) => {
+  res.send('users');
+});
 
 router.post(
   '/',
@@ -20,38 +24,35 @@ router.post(
     ).isLength({ min: 8 })
   ],
   async (req, res) => {
-    console.log('here')
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     try {
-      console.log('there')
-      let user = await User.findOne({ email });
+      let user = await User.findOne({ username });
+      let userEmail = await User.findOne({ email })
 
-      if (user) {
-        return res
-          .status(400)
-          .json({ errors: [{ msg: 'User already exists' }] });
+      if (user || userEmail) {
+        return res.status(400).send('user exists');
       }
 
-      console.log('test')
-      user = new User({
-        name,
+      let newUser = new User({
+        username,
         email,
         password
       });
 
       const salt = await bcrypt.genSalt(10);
-      console.log('salting')
-      user.password = await bcrypt.hash(password, salt);
-      console.log('salted')
-      await user.save();
+
+      newUser.password = await bcrypt.hash(password, salt);
+
+      await newUser.save();
+
       const payload = {
-        user: {
-          id: user.id
+        newUser: {
+          id: newUser.id
         }
       };
 
@@ -62,7 +63,7 @@ router.post(
       });
     } catch (err) {
       console.error(err);
-      res.status(500).send('Internal Server Error');
+      res.status(500);
     }
   }
 );
