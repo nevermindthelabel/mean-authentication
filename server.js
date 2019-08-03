@@ -2,7 +2,6 @@ const express = require('express');
 const logger = require('morgan');
 const routes = require('./routes');
 const dbConnection = require('./config/db');
-const passport = require('passport');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -14,10 +13,8 @@ app.use(routes);
 
 dbConnection();
 
-app.use(passport.initialize());
-
 app.listen(PORT, () =>
   console.log(
-    `🌎  ==> API Server now listening on PORT http://localhost:${PORT}`
+    `🌎  ==> API Server now 🏃‍ on PORT http://localhost:${PORT}`
   )
 );
