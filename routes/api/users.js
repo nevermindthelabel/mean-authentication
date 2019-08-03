@@ -3,12 +3,14 @@ const router = require('express').Router();
 const { check, validationResult } = require('express-validator');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const auth = require('../../middleware/auth');
 
 const User = require('../../models/User');
 const secret = process.env.jwtSecret;
 
-router.get('/', (req, res) => {
-  res.send('users');
+router.get('/', async (req, res) => {
+  const users = await User.find().select('-password').select('-email');
+  res.json(users);
 });
 
 router.post(
@@ -32,7 +34,7 @@ router.post(
 
     try {
       let user = await User.findOne({ username });
-      let userEmail = await User.findOne({ email })
+      let userEmail = await User.findOne({ email });
 
       if (user || userEmail) {
         return res.status(400).send('user exists');
